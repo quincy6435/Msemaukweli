@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 import cloudinary
 import cloudinary.uploader
@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'debugsecret')
 
 cloudinary.config(
     cloud_name=os.getenv('CLOUD_NAME'),
@@ -23,27 +24,25 @@ def index():
     if request.method == 'POST':
         file = request.files.get('file')
         article = request.form.get('article')
-        if file and file.filename != '' and allowed_file(file.filename):
-            try:
+        try:
+            if file and file.filename != '' and allowed_file(file.filename):
                 result = cloudinary.uploader.upload(
                     file,
                     folder="msemaukweli",
                     resource_type="auto"
                 )
-                print(f"Uploaded: {result['secure_url']}")
-            except Exception as e:
-                print(f"Upload error: {str(e)}")
-        if article and article.strip():
-            try:
+                flash(f"Uploaded: {result['secure_url']}", 'success')
+            if article and article.strip():
                 result = cloudinary.uploader.upload(
                     article,
                     folder="msemaukweli",
                     resource_type="auto",
                     public_id=f"article_{len(article)}_{hash(article)}.txt"
                 )
-                print(f"Article uploaded: {result['secure_url']}")
-            except Exception as e:
-                print(f"Article upload error: {str(e)}")
+                flash(f"Article uploaded: {result['secure_url']}", 'success')
+        except Exception as e:
+            flash(f"Upload error: {str(e)}", 'danger')
+            print(f"Upload error: {str(e)}")
         return redirect(url_for('index'))
     try:
         resources = cloudinary.Search()\
@@ -51,6 +50,7 @@ def index():
             .execute()
         uploads = resources.get('resources', [])
     except Exception as e:
+        flash(f"Error fetching resources: {str(e)}", 'danger')
         print(f"Error fetching resources: {str(e)}")
         uploads = []
     return render_template('index.html', uploads=uploads)
