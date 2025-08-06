@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Downfall of Ruto and his Minions</title>
+    <link href="https://res.cloudinary.com/demo/aui/v1.0.0/cld-ie8.css" rel="stylesheet">
+    <script src="https://res.cloudinary.com/demo/aui/v1.0.0/cloudinary-core-shrinkwrap.min.js"></script>
     <style>
         body {
             font-family: 'Times New Roman', Times, serif;
@@ -122,27 +124,29 @@
             <button type="submit">Upload</button>
         </form>
         <div class="uploads">
-            <h2>Recent Uploads</h2>
-            {% for upload in uploads|reverse %}
-    <div class="upload-item">
-
-        {% if upload.filename.endswith('.jpg') or upload.filename.endswith('.jpeg') or upload.filename.endswith('.png') or upload.filename.endswith('.gif') %}
-            <img src="{{ url_for('uploaded_file', filename=upload.filename) }}" alt="Image">
-        {% elif upload.filename.endswith('.mp4') or upload.filename.endswith('.webm') or upload.filename.endswith('.ogg') %}
-            <video controls src="{{ url_for('uploaded_file', filename=upload.filename) }}"></video>
-        {% elif upload.filename.endswith('.mp3') or upload.filename.endswith('.wav') or upload.filename.endswith('.m4a') %}
-            <audio controls src="{{ url_for('uploaded_file', filename=upload.filename) }}"></audio>
-        {% elif upload.filename.endswith('.txt') %}
-            <div class="article-text">
-                {{ upload.article_content }}
+            <div class="uploads">
+                {% for upload in uploads %}
+                    <div class="upload-item">
+                        {% if upload.format in ['jpg', 'png', 'jpeg', 'gif'] %}
+                            <img src="{{ upload.secure_url }}" class="responsive" alt="Image">
+                        {% elif upload.format in ['mp4', 'webm', 'ogg'] %}
+                            <video controls class="responsive">
+                                <source src="{{ upload.secure_url }}" type="video/{{ upload.format }}">
+                                Your browser does not support the video tag.
+                            </video>
+                        {% elif upload.format in ['mp3', 'wav'] %}
+                            <audio controls>
+                                <source src="{{ upload.secure_url }}" type="audio/{{ upload.format }}">
+                                Your browser does not support the audio element.
+                            </audio>
+                        {% else %}
+                            <div class="article">
+                                <a href="{{ upload.secure_url }}" target="_blank">View Article</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
             </div>
-        {% else %}
-            <a href="{{ url_for('uploaded_file', filename=upload.filename) }}">Download</a>
-        {% endif %}
-    </div>
-{% else %}
-    <p>No uploads yet.</p>
-{% endfor %}
         </div>
     </div>
 </body>

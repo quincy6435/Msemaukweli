@@ -9,7 +9,6 @@ venv/
 uploads/
 
 # Environment variables
-.env
 
 # VSCode
 .vscode/
